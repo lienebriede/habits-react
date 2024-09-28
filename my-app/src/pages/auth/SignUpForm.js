@@ -106,7 +106,7 @@ const SignUpForm = () => {
         <div>
           <p>Already have an account?{" "}
             <Link className={styles.Link} to="/signin">
-            Sign in
+            Sign in!
           </Link></p>
         </div>
       

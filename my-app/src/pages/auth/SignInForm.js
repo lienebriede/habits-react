@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Container, Form, Button, Alert } from "react-bootstrap";
 import styles from "../../styles/SignInUpForm.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import appStyles from "../../App.module.css";
 import axios from "axios";
+import { SetCurrentUserContext } from "../../App";
 
+function SignInForm() {
+  const setCurrentUser = useContext(SetCurrentUserContext);
 
-const SignInForm = () => {
   const [signInData, setSignInData] = useState({
     username: "",
     password: "",
@@ -26,20 +28,29 @@ const SignInForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    console.log("Submitting sign-in data:", signInData);
     try {
-      await axios.post("/dj-rest-auth/login/", signInData);
+      const { data } = await axios.post("/dj-rest-auth/login/", signInData);
+      console.log("Login response data:", data);
+      // Set the Authorization header for future requests
+      axios.defaults.headers.common['Authorization'] = `Token ${data.key}`;
+      console.log("Authorization header set:", axios.defaults.headers.common['Authorization']);
+      
+      const userResponse = await axios.get("/dj-rest-auth/user/");
+      console.log("User data retrieved:", userResponse.data);
+      setCurrentUser(data.user); 
       navigate("/");
     } catch (err) {
+      console.log("Error during sign-in:", err);
       setErrors(err.response?.data);
     }
-  };
+  }
 
   return (
     <Container className={appStyles}>
         <div>
           <h1 className={styles.Header}>Sign In</h1>
           <Form onSubmit={handleSubmit}>
-
             <Form.Group className="mb-3" controlId="username">
               <Form.Label>Username</Form.Label>
               <Form.Control
